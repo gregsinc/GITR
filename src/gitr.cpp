@@ -42,9 +42,9 @@
 #ifdef __CUDACC__
 #include <curand.h>
 #include <curand_kernel.h>
-#include <experimental/filesystem>
+//#include <experimental/filesystem>
 #else
-#include <experimental/filesystem>
+//#include <experimental/filesystem>
 #endif
 
 #if USE_MPI
@@ -132,24 +132,24 @@ int main(int argc, char **argv, char **envp) {
   }
 
 // show memory usage of GPU
-#if __CUDACC__
-  namespace fsn = std::experimental::filesystem;
-#else
-  namespace fsn = std::experimental::filesystem;
-#endif
+//#if __CUDACC__
+//  namespace fsn = std::experimental::filesystem;
+//#else
+//  namespace fsn = std::experimental::filesystem;
+//#endif
 
-print_gpu_memory_usage(world_rank);
+//print_gpu_memory_usage(world_rank);
 
-  fsn::path output_folder = "output";
+  // fsn::path output_folder = "output";
   // Output
 
   //boost::filesystem::path dir(output_folder);
-  if (!(fsn::exists(output_folder))) {
-    std::cout << "Doesn't Exist in main" << std::endl;
-    if (fsn::create_directory(output_folder)) {
-      std::cout << " Successfully Created " << std::endl;
-    }
-  }
+  // if (!(fsn::exists(output_folder))) {
+  // std::cout << "Doesn't Exist in main" << std::endl;
+  // if (fsn::create_directory(output_folder)) {
+  //  std::cout << " Successfully Created " << std::endl;
+  //   }
+  // }
 
   // Background species info
   float background_Z = 0.0, background_amu = 0.0;
@@ -404,7 +404,7 @@ print_gpu_memory_usage(world_rank);
                  nY_closeGeomTotal, nZ_closeGeomTotal, nHashPoints.data(),
                  nHashPointsTotal, nGeomHash);
     std::cout << "made it here" << std::endl;
-     Setting& geomHash = cfg.lookup("geometry_hash");
+    libconfig::Setting& geomHash = cfg.lookup("geometry_hash");
      if(nHashes > 1)
     {
       for(int i=0; i<nHashes;i++)
@@ -446,17 +446,11 @@ print_gpu_memory_usage(world_rank);
      nR_closeGeomTotal = 0;
      nY_closeGeomTotal = 0;
      nZ_closeGeomTotal = 0;
-     nGeomHash = 0;
+     nHashPointsTotal = 0;
+     std::cout<<"nY_closeGeomValue "<<nY_closeGeom[0]<<std::endl;
      for(int j=0;j<nHashes;j++)
     {
-      if(nHashes > 1)
-      {
-        nHashPoints[j] =nR_closeGeom[j]*nY_closeGeom[j]*nZ_closeGeom[j];
-      }
-      else
-      {
-        nHashPoints[j] =nR_closeGeom[j]*nZ_closeGeom[j];
-      }
+      nHashPoints[j] =nR_closeGeom[j]*nY_closeGeom[j]*nZ_closeGeom[j];
       nHashPointsTotal = nHashPointsTotal + nHashPoints[j];
       nGeomHash = nGeomHash + nHashPoints[j]*n_closeGeomElements[j];
       nR_closeGeomTotal = nR_closeGeomTotal + nR_closeGeom[j];
@@ -551,7 +545,7 @@ print_gpu_memory_usage(world_rank);
       hashY0(nHashes, 0.0), hashY1(nHashes, 0.0), hashZ0(nHashes, 0.0),
       hashZ1(nHashes, 0.0);
   if (world_rank == 0) {
-    Setting &geomHash = cfg.lookup("geometry_hash");
+    libconfig::Setting &geomHash = cfg.lookup("geometry_hash");
     if (nHashes > 1) {
       for (int i = 0; i < nHashes; i++) {
         hashX0[i] = geomHash["hashX0"][i];
@@ -762,6 +756,7 @@ print_gpu_memory_usage(world_rank);
     for (int i = 0; i < nHashes; i++) {
       NcFile ncFile_hash("output/geomHash" + std::to_string(i) + ".nc",
                          NcFile::replace);
+      std::cout <<"Successfully created geomhash file"<<std::endl;
       NcDim hashNR = ncFile_hash.addDim("nR", nR_closeGeom[i]);
 #if USE3DTETGEOM > 0
       NcDim hashNY = ncFile_hash.addDim("nY", nY_closeGeom[i]);
@@ -800,7 +795,9 @@ print_gpu_memory_usage(world_rank);
       hash.putVar(&closeGeom[ncIndex]);
       ncFile_hash.close();
     }
+std::cout <<"Successfully closed geomhash file"<<std::endl;
   }
+
 #elif GEOM_HASH > 1
   if (world_rank == 0) {
     for (int i = 0; i < nHashes; i++) {
